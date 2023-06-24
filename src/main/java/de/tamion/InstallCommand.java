@@ -18,6 +18,7 @@ public class InstallCommand implements Runnable {
     @CommandLine.Option(names = {"-b", "--build"}, description = "Build of Version") String build = "latest";
     @CommandLine.Option(names = {"-p", "--project"}, description = "Project you want to download: paper, velocity, waterfall") String project = "paper";
     @CommandLine.Option(names = {"-n", "--no-start"}, description = "Don't start the server after installing") Boolean nostart = false;
+    @CommandLine.Option(names = {"-m", "--memory"}, description = "How much RAM you want to give the server") String memory = "2G";
     @Override
     public void run() {
         try {
@@ -33,9 +34,9 @@ public class InstallCommand implements Runnable {
             FileUtils.copyURLToFile(new URL("https://api.papermc.io/v2/projects/" + project + "/versions/" + version + "/builds/" + build + "/downloads/" + project + "-" + version + "-" + build + ".jar"), new File(directory + "/server.jar"));
             System.out.println("Downloaded Server");
             if (System.getProperty("os.name").toLowerCase().contains("win")) {
-                FileUtils.writeStringToFile(new File(directory + "/start.bat"), "java -jar " + PaperCLICommand.class.getProtectionDomain().getCodeSource().getLocation().getFile().substring(1) + " start");
+                FileUtils.writeStringToFile(new File(directory + "/start.bat"), "java -jar " + PaperCLICommand.class.getProtectionDomain().getCodeSource().getLocation().getFile().substring(1) + " start -m \"" + memory + "\"");
             } else {
-                FileUtils.writeStringToFile(new File(directory + "/start.sh"), "java -jar " + PaperCLICommand.class.getProtectionDomain().getCodeSource().getLocation().getFile() + " start");
+                FileUtils.writeStringToFile(new File(directory + "/start.sh"), "java -jar " + PaperCLICommand.class.getProtectionDomain().getCodeSource().getLocation().getFile() + " start -m \"" + memory + "\"");
             }
             System.out.println("Created Start Script");
             Properties props = new Properties();
@@ -51,7 +52,7 @@ public class InstallCommand implements Runnable {
             System.out.println("Created Properties File");
             if(!nostart) {
                 System.out.println("Starting server");
-                new ProcessBuilder("java", "-jar", "./server.jar")
+                new ProcessBuilder("java", "-Xms" + memory, "-Xmx" + memory, "-jar", "./server.jar", "--nogui")
                         .directory(new File(directory))
                         .inheritIO()
                         .start()

@@ -16,6 +16,7 @@ import java.util.Properties;
 public class StartCommand implements Runnable {
 
     @CommandLine.Option(names = {"-d", "--directory"}, description = "Server Directory") String directory = ".";
+    @CommandLine.Option(names = {"-m", "--memory"}, description = "How much RAM you want to give the server") String memory = "2G";
     @Override
     public void run() {
         try {
@@ -36,7 +37,7 @@ public class StartCommand implements Runnable {
                 }
             }
             System.out.println("Starting server");
-            new ProcessBuilder("java", "-jar", "./server.jar")
+            new ProcessBuilder("java", "-Xms" + memory, "-Xmx" + memory, "-jar", "./server.jar", "--nogui")
                     .directory(new File(directory))
                     .inheritIO()
                     .start()
