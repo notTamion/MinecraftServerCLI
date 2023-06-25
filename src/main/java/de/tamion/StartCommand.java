@@ -27,7 +27,7 @@ public class StartCommand implements Runnable {
                     String project = props.getProperty("project");
                     String version = props.getProperty("version");
                     String currentbuild = props.getProperty("build");
-                    String[] builds = new ObjectMapper().readTree(IOUtils.toString(new URL("https://api.papermc.io/v2/projects/" + project + "/versions/" + version))).get("builds").toString().replaceAll("\\[", "").replaceAll("]", "").split(",");
+                    String[] builds = new ObjectMapper().readTree(new URL("https://api.papermc.io/v2/projects/" + project + "/versions/" + version)).get("builds").toString().replaceAll("\\[", "").replaceAll("]", "").split(",");
                     String latestbuild = builds[builds.length - 1];
                     if (!latestbuild.equals(currentbuild)) {
                         System.out.println("Downloading " + project + " version " + version + " build #" + latestbuild + "...");

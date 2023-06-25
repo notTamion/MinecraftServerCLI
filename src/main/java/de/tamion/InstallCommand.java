@@ -23,11 +23,11 @@ public class InstallCommand implements Runnable {
     public void run() {
         try {
             if(version.equals("latest")) {
-                String[] versions = new ObjectMapper().readTree(IOUtils.toString(new URL("https://api.papermc.io/v2/projects/" + project))).get("versions").toString().replaceAll("\\[", "").replaceAll("]", "").split(",");
+                String[] versions = new ObjectMapper().readTree(new URL("https://api.papermc.io/v2/projects/" + project)).get("versions").toString().replaceAll("\\[", "").replaceAll("]", "").split(",");
                 version = versions[versions.length - 1].replaceAll("\"", "");
             }
             if(build.equals("latest")) {
-                String[] builds = new ObjectMapper().readTree(IOUtils.toString(new URL("https://api.papermc.io/v2/projects/" + project + "/versions/" + version))).get("builds").toString().replaceAll("\\[", "").replaceAll("]", "").split(",");
+                String[] builds = new ObjectMapper().readTree(new URL("https://api.papermc.io/v2/projects/" + project + "/versions/" + version)).get("builds").toString().replaceAll("\\[", "").replaceAll("]", "").split(",");
                 build = builds[builds.length - 1];
             }
             System.out.println("Downloading " + project + " version " + version + " build #" + build + "...");
