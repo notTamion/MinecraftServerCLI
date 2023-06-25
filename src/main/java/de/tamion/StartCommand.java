@@ -2,13 +2,9 @@ package de.tamion;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import picocli.CommandLine;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.net.URL;
 import java.util.Properties;
 
@@ -32,12 +28,14 @@ public class StartCommand implements Runnable {
                     if (!latestbuild.equals(currentbuild)) {
                         System.out.println("Downloading " + project + " version " + version + " build #" + latestbuild + "...");
                         FileUtils.copyURLToFile(new URL("https://api.papermc.io/v2/projects/" + project + "/versions/" + version + "/builds/" + latestbuild + "/downloads/" + project + "-" + version + "-" + latestbuild + ".jar"), new File(directory + "/server.jar"));
+                        props.setProperty("build", latestbuild);
+                        props.store(new FileWriter(directory + "/papercli.properties"), "PaperCLI settings");
                         System.out.println("Downloaded Server");
                     }
                 }
             }
             System.out.println("Starting server");
-            new ProcessBuilder("java", "-Xms" + memory, "-Xmx" + memory, "-jar", "./server.jar", "--nogui")
+            new ProcessBuilder("java", "-Xms" + memory, "-Xmx" + memory, "-jar", "./server.jar")
                     .directory(new File(directory))
                     .inheritIO()
                     .start()

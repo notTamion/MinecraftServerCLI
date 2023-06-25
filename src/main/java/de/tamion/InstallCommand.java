@@ -2,7 +2,6 @@ package de.tamion;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import picocli.CommandLine;
 
 import java.io.File;
@@ -52,7 +51,7 @@ public class InstallCommand implements Runnable {
             System.out.println("Created Properties File");
             if(!nostart) {
                 System.out.println("Starting server");
-                new ProcessBuilder("java", "-Xms" + memory, "-Xmx" + memory, "-jar", "./server.jar", "--nogui")
+                new ProcessBuilder("java", "-Xms" + memory, "-Xmx" + memory, "-jar", "./server.jar")
                         .directory(new File(directory))
                         .inheritIO()
                         .start()
