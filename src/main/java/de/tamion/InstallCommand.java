@@ -12,7 +12,7 @@ import java.util.Properties;
 
 @CommandLine.Command(name = "install", description = "Install PaperMC Server", mixinStandardHelpOptions = true)
 public class InstallCommand implements Runnable {
-    @CommandLine.Parameters(index = "0", arity = "0..1") String version = "latest";
+    @CommandLine.Parameters(index = "0", description = "Version you want to install", arity = "0..1") String version = "latest";
     @CommandLine.Option(names = {"-d", "--directory"}, description = "Server Directory") String directory = ".";
     @CommandLine.Option(names = {"-b", "--build"}, description = "Build of Version") String build = "latest";
     @CommandLine.Option(names = {"-p", "--project"}, description = "Project you want to download: paper, velocity, waterfall") String project = "paper";
@@ -33,9 +33,9 @@ public class InstallCommand implements Runnable {
             FileUtils.copyURLToFile(new URL("https://api.papermc.io/v2/projects/" + project + "/versions/" + version + "/builds/" + build + "/downloads/" + project + "-" + version + "-" + build + ".jar"), new File(directory + "/server.jar"));
             System.out.println("Downloaded Server");
             if (System.getProperty("os.name").toLowerCase().contains("win")) {
-                FileUtils.writeStringToFile(new File(directory + "/start.bat"), "java -jar " + PaperCLICommand.class.getProtectionDomain().getCodeSource().getLocation().getFile().substring(1) + " start -m \"" + memory + "\"");
+                FileUtils.writeStringToFile(new File(directory + "/start.bat"), "java -jar " + PaperCLICommand.class.getProtectionDomain().getCodeSource().getLocation().getFile().substring(1) + " start");
             } else {
-                FileUtils.writeStringToFile(new File(directory + "/start.sh"), "java -jar " + PaperCLICommand.class.getProtectionDomain().getCodeSource().getLocation().getFile() + " start -m \"" + memory + "\"");
+                FileUtils.writeStringToFile(new File(directory + "/start.sh"), "java -jar " + PaperCLICommand.class.getProtectionDomain().getCodeSource().getLocation().getFile() + " start");
             }
             System.out.println("Created Start Script");
             Properties props = new Properties();
@@ -47,18 +47,23 @@ public class InstallCommand implements Runnable {
             props.setProperty("project", project);
             props.setProperty("version", version);
             props.setProperty("build", build);
+            props.setProperty("memory", memory);
             props.store(new FileWriter(directory + "/papercli.properties"), "PaperCLI settings");
             System.out.println("Created Properties File");
             if(!nostart) {
+                String nogui = "";
+                if(project.equals("paper")) {
+                    nogui = "--nogui";
+                }
                 System.out.println("Starting server");
-                new ProcessBuilder("java", "-Xms" + memory, "-Xmx" + memory, "-jar", "./server.jar")
+                new ProcessBuilder("java", "-Xms" + memory, "-Xmx" + memory, "-jar", "./server.jar", nogui)
                         .directory(new File(directory))
                         .inheritIO()
                         .start()
                         .waitFor();
             }
         } catch(FileNotFoundException e) {
-            System.out.println("No downloadable server software found");
+            System.out.println("\033[0;31mNo downloadable server software found");
         } catch (Exception e) {
             e.printStackTrace();
         }
