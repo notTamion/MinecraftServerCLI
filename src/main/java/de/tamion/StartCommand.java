@@ -17,27 +17,34 @@ public class StartCommand implements Runnable {
     public void run() {
         try {
             String nogui = "";
-            if(new File(directory + "/papercli.properties").exists()) {
+            if(new File(directory + "/mcscli.properties").exists()) {
                 Properties props = new Properties();
-                props.load(new FileReader(new File(directory + "/papercli.properties")));
+                props.load(new FileReader(new File(directory + "/mcscli.properties")));
+                String project = props.getProperty("project");
+                String version = props.getProperty("version");
+                String currentbuild = props.getProperty("build");
+                if(memory.equals("default")) {
+                    memory = props.getProperty("memory");
+                }
+                if(project.equals("paper")) {
+                    nogui = "--nogui";
+                }
                 if (props.getProperty("AutoUpdater").equals("true")) {
-                    String project = props.getProperty("project");
-                    String version = props.getProperty("version");
-                    String currentbuild = props.getProperty("build");
-                    if(memory.equals("default")) {
-                        memory = props.getProperty("memory");
+                    String latestbuild;
+                    if(project.equals("purpur")) {
+                        latestbuild = new ObjectMapper().readTree(new URL("https://api.purpurmc.org/v2/purpur/" + version + "/latest")).get("build").asText();
+                    } else {
+                        String[] builds = new ObjectMapper().readTree(new URL("https://api.papermc.io/v2/projects/" + project + "/versions/" + version)).get("builds").toString().replaceAll("\\[", "").replaceAll("]", "").split(",");
+                        latestbuild = builds[builds.length - 1];
                     }
-                    if(project.equals("paper")) {
-                        nogui = "--nogui";
-                    }
-                    String[] builds = new ObjectMapper().readTree(new URL("https://api.papermc.io/v2/projects/" + project + "/versions/" + version)).get("builds").toString().replaceAll("\\[", "").replaceAll("]", "").split(",");
-                    String latestbuild = builds[builds.length - 1];
                     if (!latestbuild.equals(currentbuild)) {
                         System.out.println("Downloading " + project + " version " + version + " build #" + latestbuild + "...");
-                        FileUtils.copyURLToFile(new URL("https://api.papermc.io/v2/projects/" + project + "/versions/" + version + "/builds/" + latestbuild + "/downloads/" + project + "-" + version + "-" + latestbuild + ".jar"), new File(directory + "/server.jar"));
+                        if(project.equals("purpur")) {
+                            FileUtils.copyURLToFile(new URL("https://api.purpurmc.org/v2/purpur/" + version + "/" + latestbuild + "/download"), new File(directory + "/server.jar"));
+                        }
                         System.out.println("Downloaded Server");
                         props.setProperty("build", latestbuild);
-                        props.store(new FileWriter(directory + "/papercli.properties"), "PaperCLI settings");
+                        props.store(new FileWriter(directory + "/mcscli.properties"), "MinecraftServerCLI settings");
                         System.out.println("Updated properties file");
                     }
                 }

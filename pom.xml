@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>de.tamion</groupId>
-    <artifactId>PaperCLI</artifactId>
+    <artifactId>MinecraftServerCLI</artifactId>
     <version>1.0.0</version>
 
     <properties>
