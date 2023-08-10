@@ -9,7 +9,7 @@ import java.net.URL;
 
 @CommandLine.Command(name = "builds", description = "List all available build for a version", mixinStandardHelpOptions = true)
 public class BuildsCommand implements Runnable {
-    @CommandLine.Option(names = {"-p", "--project"}, description = "Project that has the version") String project = "purpur";
+    @CommandLine.Option(names = {"-p", "--project"}, description = "Project that has the version") String project = "paper";
     @CommandLine.Parameters(index = "0", description = "Version you want to list the builds for", arity = "0..1") String version = "latest";
     @CommandLine.Option(names = {"-v", "--verbose"}, description = "Also list changes") boolean verbose;
     @Override

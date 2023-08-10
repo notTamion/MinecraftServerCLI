@@ -6,7 +6,7 @@ import picocli.CommandLine;
 import java.io.IOException;
 import java.net.URL;
 
-@CommandLine.Command(name = "projects", description = "list all available Paper Projects", mixinStandardHelpOptions = true)
+@CommandLine.Command(name = "projects", description = "list all available Projects", mixinStandardHelpOptions = true)
 public class ProjectsCommand implements Runnable {
     @Override
     public void run() {

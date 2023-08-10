@@ -8,7 +8,7 @@ import java.net.URL;
 
 @CommandLine.Command(name = "versions", description = "List all available versions for a project", mixinStandardHelpOptions = true)
 public class VersionsCommand implements Runnable {
-    @CommandLine.Parameters(index = "0", description = "Project you want to list the versions for", arity = "0..1") String project = "purpur";
+    @CommandLine.Parameters(index = "0", description = "Project you want to list the versions for", arity = "0..1") String project = "paper";
     @Override
     public void run() {
         try {

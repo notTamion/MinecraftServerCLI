@@ -26,7 +26,7 @@ public class StartCommand implements Runnable {
                 if(memory.equals("default")) {
                     memory = props.getProperty("memory");
                 }
-                if(project.equals("paper")) {
+                if(project.equals("paper") || project.equals("purpur")) {
                     nogui = "--nogui";
                 }
                 if (props.getProperty("AutoUpdater").equals("true")) {

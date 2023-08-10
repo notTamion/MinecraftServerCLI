@@ -14,7 +14,7 @@ import java.util.concurrent.Callable;
 @CommandLine.Command(name = "install", description = "Install PaperMC Server", mixinStandardHelpOptions = true)
 public class InstallCommand implements Runnable {
     @CommandLine.Option(names = {"-d", "--directory"}, description = "Server Directory") String directory = ".";
-    @CommandLine.Option(names = {"-p", "--project"}, description = "Project you want to download: paper, velocity, waterfall, purpur") String project = "purpur";
+    @CommandLine.Option(names = {"-p", "--project"}, description = "Project you want to download: paper, velocity, waterfall, purpur") String project = "paper";
     @CommandLine.Parameters(index = "0", description = "Version you want to install", arity = "0..1") String version = "latest";
     @CommandLine.Option(names = {"-b", "--build"}, description = "Build of Version") String build = "latest";
     @CommandLine.Option(names = {"-n", "--no-start"}, description = "Don't start the server after installing") Boolean nostart = false;
