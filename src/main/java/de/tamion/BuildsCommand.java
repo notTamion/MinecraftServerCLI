@@ -14,44 +14,45 @@ public class BuildsCommand implements Runnable {
     @CommandLine.Option(names = {"-v", "--verbose"}, description = "Also list changes") boolean verbose;
     @Override
     public void run() {
+        project = project.toLowerCase();
         try {
-            if(version.equals("latest")) {
+            if(version.equalsIgnoreCase("latest")) {
                 String[] versions;
-                if(project.equals("purpur")) {
-                    versions = new ObjectMapper().readTree(new URL("https://api.purpurmc.org/v2/purpur")).get("versions").toString().replaceAll("\\[", "").replaceAll("]", "").split(",");
-                } else {
-                    versions = new ObjectMapper().readTree(new URL("https://api.papermc.io/v2/projects/" + project)).get("versions").toString().replaceAll("\\[", "").replaceAll("]", "").split(",");
+                switch (project) {
+                    case "purpur": versions = new ObjectMapper().readTree(new URL("https://api.purpurmc.org/v2/" + project)).get("versions").toString().replaceAll("\\[", "").replaceAll("]", "").split(","); break;
+                    default: versions = new ObjectMapper().readTree(new URL("https://api.papermc.io/v2/projects/" + project)).get("versions").toString().replaceAll("\\[", "").replaceAll("]", "").split(","); break;
                 }
                 version = versions[versions.length - 1].replaceAll("\"", "");
             }
             StringBuilder sb = new StringBuilder();
             if(verbose) {
                 JsonNode json;
-                if(project.equals("purpur")) {
-                    json = new ObjectMapper().readTree(new URL("https://api.purpurmc.org/v2/purpur/" + version + "?detailed=true"));
-                    for (JsonNode build : json.get("builds").get("all")) {
-                        sb.append("\033[44m" + build.get("build") + "\033[0m\n");
-                        for(JsonNode changes : build.get("commits")) {
-                            sb.append("\033[0;36m" + changes.get("hash").asText() + "\033[0m\n" + changes.get("description").asText().replaceAll("\n", "").replaceAll("\r", "") + "\n\n");
+                switch (project) {
+                    case "purpur":
+                        json = new ObjectMapper().readTree(new URL("https://api.purpurmc.org/v2/" + project + "/" + version + "?detailed=true"));
+                        for (JsonNode build : json.get("builds").get("all")) {
+                            sb.append(build.get("build") + "\n");
+                            for(JsonNode changes : build.get("commits")) {
+                                sb.append(changes.get("hash").asText()+ "\n" + changes.get("description").asText().replaceAll("\n", "").replaceAll("\r", "") + "\n\n");
+                            }
                         }
-                    }
-                } else {
-                    json = new ObjectMapper().readTree(new URL("https://api.papermc.io/v2/projects/" + project + "/versions/" + version + "/builds"));
-                    for (JsonNode build : json.get("builds")) {
-                        sb.append("\033[44m" + build.get("build") + "\033[0m\n");
-                        for(JsonNode changes : build.get("changes")) {
-                            sb.append("\033[0;36m" + changes.get("commit").asText() + "\033[0m\n" + changes.get("message").asText().replaceAll("\n", "").replaceAll("\r", "") + "\n\n");
+                        break;
+                    default:
+                        json = new ObjectMapper().readTree(new URL("https://api.papermc.io/v2/projects/" + project + "/versions/" + version + "/builds"));
+                        for (JsonNode build : json.get("builds")) {
+                            sb.append(build.get("build") + "\n");
+                            for(JsonNode changes : build.get("changes")) {
+                                sb.append(changes.get("commit").asText() + "\n" + changes.get("message").asText().replaceAll("\n", "").replaceAll("\r", "") + "\n\n");
+                            }
                         }
-                    }
                 }
             } else {
-                if(project.equals("purpur")) {
-                    sb.append(new ObjectMapper().readTree(new URL("https://api.purpurmc.org/v2/purpur/" + version)).get("builds").get("all").toString().replaceAll("\\[", "").replaceAll("]", "").replaceAll(",", ", ").replaceAll("\"", ""));
-                } else {
-                    sb.append(new ObjectMapper().readTree(new URL("https://api.papermc.io/v2/projects/" + project + "/versions/" + version)).get("builds").toString().replaceAll("\\[", "").replaceAll("]", "").replaceAll(",", ", "));
+                switch (project) {
+                    case "purpur": sb.append(new ObjectMapper().readTree(new URL("https://api.purpurmc.org/v2/purpur/" + version)).get("builds").get("all").toString().replaceAll("\\[", "").replaceAll("]", "").replaceAll(",", ", ").replaceAll("\"", "")); break;
+                    default: sb.append(new ObjectMapper().readTree(new URL("https://api.papermc.io/v2/projects/" + project + "/versions/" + version)).get("builds").toString().replaceAll("\\[", "").replaceAll("]", "").replaceAll(",", ", ")); break;
                 }
             }
-            System.out.println(sb.toString());
+            System.out.println(sb);
         } catch (IOException e) {
             System.out.println("Couldn't find version");
         }

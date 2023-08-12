@@ -19,7 +19,7 @@ public class StartCommand implements Runnable {
             String nogui = "";
             if(new File(directory + "/mcscli.properties").exists()) {
                 Properties props = new Properties();
-                props.load(new FileReader(new File(directory + "/mcscli.properties")));
+                props.load(new FileReader(directory + "/mcscli.properties"));
                 String project = props.getProperty("project");
                 String version = props.getProperty("version");
                 String currentbuild = props.getProperty("build");
@@ -29,18 +29,17 @@ public class StartCommand implements Runnable {
                 if(project.equals("paper") || project.equals("purpur")) {
                     nogui = "--nogui";
                 }
-                if (props.getProperty("AutoUpdater").equals("true")) {
+                if (!props.getProperty("AutoUpdater").equals("true")) {
                     String latestbuild;
-                    if(project.equals("purpur")) {
-                        latestbuild = new ObjectMapper().readTree(new URL("https://api.purpurmc.org/v2/purpur/" + version + "/latest")).get("build").asText();
-                    } else {
-                        String[] builds = new ObjectMapper().readTree(new URL("https://api.papermc.io/v2/projects/" + project + "/versions/" + version)).get("builds").toString().replaceAll("\\[", "").replaceAll("]", "").split(",");
-                        latestbuild = builds[builds.length - 1];
+                    switch (project) {
+                        case "purpur": latestbuild = new ObjectMapper().readTree(new URL("https://api.purpurmc.org/v2/" + project + "/" + version + "/latest")).get("build").asText(); break;
+                        default: String[] builds = new ObjectMapper().readTree(new URL("https://api.papermc.io/v2/projects/" + project + "/versions/" + version)).get("builds").toString().replaceAll("\\[", "").replaceAll("]", "").split(","); latestbuild = builds[builds.length - 1]; break;
                     }
                     if (!latestbuild.equals(currentbuild)) {
                         System.out.println("Downloading " + project + " version " + version + " build #" + latestbuild + "...");
-                        if(project.equals("purpur")) {
-                            FileUtils.copyURLToFile(new URL("https://api.purpurmc.org/v2/purpur/" + version + "/" + latestbuild + "/download"), new File(directory + "/server.jar"));
+                        switch (project) {
+                            case "purpur": FileUtils.copyURLToFile(new URL("https://api.purpurmc.org/v2/" + project + "/" + version + "/" + latestbuild + "/download"), new File(directory + "/server.jar")); break;
+                            default: FileUtils.copyURLToFile(new URL("https://api.papermc.io/v2/projects/" + project + "/versions/" + version + "/builds/" + latestbuild + "/downloads/" + project + "-" + version + "-" + latestbuild + ".jar"), new File(directory + "/server.jar")); break;
                         }
                         System.out.println("Downloaded Server");
                         props.setProperty("build", latestbuild);
@@ -59,9 +58,9 @@ public class StartCommand implements Runnable {
                     .start()
                     .waitFor();
         } catch(FileNotFoundException e) {
-            System.out.println("\033[0;31mNo downloadable server software found");
+            System.out.println("No downloadable server software found");
         } catch (IOException e) {
-            System.out.println("\033[0;31mNo Server found in Directory");
+            System.out.println("No Server found in Directory");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
