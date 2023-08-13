@@ -1,2 +1,2 @@
-# PaperCLI
-Command Line Interface for PaperMC
+# MinecraftServerCLI
+Command Line Interface for Minecraft Servers
