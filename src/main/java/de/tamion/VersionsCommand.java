@@ -1,5 +1,6 @@
 package de.tamion;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import picocli.CommandLine;
 
@@ -14,6 +15,14 @@ public class VersionsCommand implements Runnable {
         project = project.toLowerCase();
         try {
             switch (project) {
+                case "fabric":
+                    JsonNode json = new ObjectMapper().readTree(new URL("https://meta.fabricmc.net/v2/versions/game"));
+                    StringBuilder sb = new StringBuilder();
+                    for (JsonNode build : json) {
+                        sb.append(build.get("version").asText() + ", ");
+                    }
+                    System.out.println(sb);
+                    break;
                 case "magma": System.out.println(new ObjectMapper().readTree(new URL("https://api.magmafoundation.org/api/v2/allVersions")).toString().replaceAll("\\[", "").replaceAll("]", "").replaceAll("\"", "").replaceAll(",", ", ")); break;
                 case "purpur": System.out.println(new ObjectMapper().readTree(new URL("https://api.purpurmc.org/v2/purpur")).get("versions").toString().replaceAll("\\[", "").replaceAll("]", "").replaceAll("\"", "").replaceAll(",", ", ")); break;
                 default: System.out.println(new ObjectMapper().readTree(new URL("https://api.papermc.io/v2/projects/" + project)).get("versions").toString().replaceAll("\\[", "").replaceAll("]", "").replaceAll("\"", "").replaceAll(",", ", "));

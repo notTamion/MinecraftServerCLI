@@ -2,7 +2,7 @@ package de.tamion;
 
 import picocli.CommandLine;
 
-@CommandLine.Command(name = "mcs", description = "MinecraftServerCLI", mixinStandardHelpOptions = true, subcommands = {InstallCommand.class, StartCommand.class, ProjectsCommand.class, VersionsCommand.class, BuildsCommand.class})
+@CommandLine.Command(name = "mcs", version = "1.1.0", description = "MinecraftServerCLI", mixinStandardHelpOptions = true, subcommands = {InstallCommand.class, StartCommand.class, ProjectsCommand.class, VersionsCommand.class, BuildsCommand.class})
 public class MinecraftServerCLICommand implements Runnable {
     public static void main(String[] args) {
         CommandLine.run(new MinecraftServerCLICommand(), args);

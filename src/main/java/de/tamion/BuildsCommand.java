@@ -20,6 +20,7 @@ public class BuildsCommand implements Runnable {
             if(version.equalsIgnoreCase("latest")) {
                 String[] versions;
                 switch (project) {
+                    case "fabric": JsonNode json = new ObjectMapper().readTree(new URL("https://meta.fabricmc.net/v2/versions/game"));versions = new String[]{json.iterator().next().get("version").asText()}; break;
                     case "magma": versions = new String[]{IOUtils.toString(new URL("https://api.magmafoundation.org/api/v2/latestVersion"))}; break;
                     case "purpur": versions = new ObjectMapper().readTree(new URL("https://api.purpurmc.org/v2/" + project)).get("versions").toString().replaceAll("\\[", "").replaceAll("]", "").split(","); break;
                     default: versions = new ObjectMapper().readTree(new URL("https://api.papermc.io/v2/projects/" + project)).get("versions").toString().replaceAll("\\[", "").replaceAll("]", "").split(","); break;
@@ -30,6 +31,17 @@ public class BuildsCommand implements Runnable {
             JsonNode json;
             if(verbose) {
                 switch (project) {
+                    case "fabric":
+                        json = new ObjectMapper().readTree(new URL("https://meta.fabricmc.net/v2/versions"));
+                        sb.append("Loader: ");
+                        for (JsonNode lbuild : json.get("loader")) {
+                            sb.append(lbuild.get("version").asText() + ", ");
+                        }
+                        sb.append("\n\nInstaller: ");
+                        for (JsonNode ibuild : json.get("installer")) {
+                            sb.append(ibuild.get("version").asText() + ", ");
+                        }
+                        break;
                     case "magma": json = new ObjectMapper().readTree(new URL("https://api.magmafoundation.org/api/v2/" + version));
                         for (JsonNode build : json) {
                             sb.append(build.get("name") + ", ");
@@ -55,6 +67,17 @@ public class BuildsCommand implements Runnable {
                 }
             } else {
                 switch (project) {
+                    case "fabric":
+                        json = new ObjectMapper().readTree(new URL("https://meta.fabricmc.net/v2/versions"));
+                        sb.append("Loader: ");
+                        for (JsonNode lbuild : json.get("loader")) {
+                            sb.append(lbuild.get("version").asText() + ", ");
+                        }
+                        sb.append("\n\nInstaller: ");
+                        for (JsonNode ibuild : json.get("installer")) {
+                            sb.append(ibuild.get("version").asText() + ", ");
+                        }
+                        break;
                     case "magma": json = new ObjectMapper().readTree(new URL("https://api.magmafoundation.org/api/v2/" + version));
                         for (JsonNode build : json) {
                             sb.append(build.get("name") + ", ");
