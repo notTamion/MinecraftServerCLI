@@ -2,6 +2,7 @@ package de.tamion;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.io.IOUtils;
 import picocli.CommandLine;
 
 import java.io.IOException;
@@ -19,15 +20,21 @@ public class BuildsCommand implements Runnable {
             if(version.equalsIgnoreCase("latest")) {
                 String[] versions;
                 switch (project) {
+                    case "magma": versions = new String[]{IOUtils.toString(new URL("https://api.magmafoundation.org/api/v2/latestVersion"))}; break;
                     case "purpur": versions = new ObjectMapper().readTree(new URL("https://api.purpurmc.org/v2/" + project)).get("versions").toString().replaceAll("\\[", "").replaceAll("]", "").split(","); break;
                     default: versions = new ObjectMapper().readTree(new URL("https://api.papermc.io/v2/projects/" + project)).get("versions").toString().replaceAll("\\[", "").replaceAll("]", "").split(","); break;
                 }
                 version = versions[versions.length - 1].replaceAll("\"", "");
             }
             StringBuilder sb = new StringBuilder();
+            JsonNode json;
             if(verbose) {
-                JsonNode json;
                 switch (project) {
+                    case "magma": json = new ObjectMapper().readTree(new URL("https://api.magmafoundation.org/api/v2/" + version));
+                        for (JsonNode build : json) {
+                            sb.append(build.get("name") + ", ");
+                        }
+                        break;
                     case "purpur":
                         json = new ObjectMapper().readTree(new URL("https://api.purpurmc.org/v2/" + project + "/" + version + "?detailed=true"));
                         for (JsonNode build : json.get("builds").get("all")) {
@@ -48,13 +55,18 @@ public class BuildsCommand implements Runnable {
                 }
             } else {
                 switch (project) {
+                    case "magma": json = new ObjectMapper().readTree(new URL("https://api.magmafoundation.org/api/v2/" + version));
+                        for (JsonNode build : json) {
+                            sb.append(build.get("name") + ", ");
+                        }
+                        break;
                     case "purpur": sb.append(new ObjectMapper().readTree(new URL("https://api.purpurmc.org/v2/purpur/" + version)).get("builds").get("all").toString().replaceAll("\\[", "").replaceAll("]", "").replaceAll(",", ", ").replaceAll("\"", "")); break;
                     default: sb.append(new ObjectMapper().readTree(new URL("https://api.papermc.io/v2/projects/" + project + "/versions/" + version)).get("builds").toString().replaceAll("\\[", "").replaceAll("]", "").replaceAll(",", ", ")); break;
                 }
             }
             System.out.println(sb);
         } catch (IOException e) {
-            System.out.println("Couldn't find version");
+            System.out.println("Couldn't find any builds for " + project + " version " + version);
         }
     }
 }
