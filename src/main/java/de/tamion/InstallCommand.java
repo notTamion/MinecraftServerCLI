@@ -49,9 +49,9 @@ public class InstallCommand implements Runnable {
             }
             System.out.println("Downloaded Server");
             if (System.getProperty("os.name").toLowerCase().contains("win")) {
-                FileUtils.writeStringToFile(new File(directory + "/start.bat"), "java -jar " + MinecraftServerCLICommand.class.getProtectionDomain().getCodeSource().getLocation().getFile().substring(1) + " start");
+                FileUtils.writeStringToFile(new File(directory + "/start.bat"), "mcs start");
             } else {
-                FileUtils.writeStringToFile(new File(directory + "/start.sh"), "java -jar " + MinecraftServerCLICommand.class.getProtectionDomain().getCodeSource().getLocation().getFile() + " start");
+                FileUtils.writeStringToFile(new File(directory + "/start.sh"), "mcs start");
             }
             System.out.println("Created Start Script");
             props.setProperty("project", project);
