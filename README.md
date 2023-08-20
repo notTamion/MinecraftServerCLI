@@ -1,5 +1,6 @@
 # MinecraftServerCLI
 Command Line Interface for listing, installing builds of Minecraft Servers
+This is good for developers who need to quickly install and test there plugins on different server versions
 
 Installation guide: https://github.com/notTamion/MinecraftServerCLI/wiki/Installation
 
