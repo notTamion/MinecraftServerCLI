@@ -20,10 +20,19 @@ public class BuildsCommand implements Runnable {
             if(version.equalsIgnoreCase("latest")) {
                 String[] versions;
                 switch (project) {
-                    case "fabric": JsonNode json = new ObjectMapper().readTree(new URL("https://meta.fabricmc.net/v2/versions/game"));versions = new String[]{json.iterator().next().get("version").asText()}; break;
-                    case "magma": versions = new String[]{IOUtils.toString(new URL("https://api.magmafoundation.org/api/v2/latestVersion"))}; break;
-                    case "purpur": versions = new ObjectMapper().readTree(new URL("https://api.purpurmc.org/v2/" + project)).get("versions").toString().replaceAll("\\[", "").replaceAll("]", "").split(","); break;
-                    default: versions = new ObjectMapper().readTree(new URL("https://api.papermc.io/v2/projects/" + project)).get("versions").toString().replaceAll("\\[", "").replaceAll("]", "").split(","); break;
+                    case "fabric":
+                        JsonNode json = new ObjectMapper().readTree(new URL("https://meta.fabricmc.net/v2/versions/game"));
+                        versions = new String[]{json.iterator().next().get("version").asText()};
+                        break;
+                    case "magma":
+                        versions = new String[]{IOUtils.toString(new URL("https://api.magmafoundation.org/api/v2/latestVersion"))};
+                        break;
+                    case "purpur":
+                        versions = new ObjectMapper().readTree(new URL("https://api.purpurmc.org/v2/" + project)).get("versions").toString().replaceAll("\\[", "").replaceAll("]", "").split(",");
+                        break;
+                    default:
+                        versions = new ObjectMapper().readTree(new URL("https://api.papermc.io/v2/projects/" + project)).get("versions").toString().replaceAll("\\[", "").replaceAll("]", "").split(",");
+                        break;
                 }
                 version = versions[versions.length - 1].replaceAll("\"", "");
             }
@@ -42,7 +51,8 @@ public class BuildsCommand implements Runnable {
                             sb.append(ibuild.get("version").asText() + ", ");
                         }
                         break;
-                    case "magma": json = new ObjectMapper().readTree(new URL("https://api.magmafoundation.org/api/v2/" + version));
+                    case "magma":
+                        json = new ObjectMapper().readTree(new URL("https://api.magmafoundation.org/api/v2/" + version));
                         for (JsonNode build : json) {
                             sb.append(build.get("name") + ", ");
                         }
@@ -78,13 +88,18 @@ public class BuildsCommand implements Runnable {
                             sb.append(ibuild.get("version").asText() + ", ");
                         }
                         break;
-                    case "magma": json = new ObjectMapper().readTree(new URL("https://api.magmafoundation.org/api/v2/" + version));
+                    case "magma":
+                        json = new ObjectMapper().readTree(new URL("https://api.magmafoundation.org/api/v2/" + version));
                         for (JsonNode build : json) {
                             sb.append(build.get("name") + ", ");
                         }
                         break;
-                    case "purpur": sb.append(new ObjectMapper().readTree(new URL("https://api.purpurmc.org/v2/purpur/" + version)).get("builds").get("all").toString().replaceAll("\\[", "").replaceAll("]", "").replaceAll(",", ", ").replaceAll("\"", "")); break;
-                    default: sb.append(new ObjectMapper().readTree(new URL("https://api.papermc.io/v2/projects/" + project + "/versions/" + version)).get("builds").toString().replaceAll("\\[", "").replaceAll("]", "").replaceAll(",", ", ")); break;
+                    case "purpur":
+                        sb.append(new ObjectMapper().readTree(new URL("https://api.purpurmc.org/v2/purpur/" + version)).get("builds").get("all").toString().replaceAll("\\[", "").replaceAll("]", "").replaceAll(",", ", ").replaceAll("\"", ""));
+                        break;
+                    default:
+                        sb.append(new ObjectMapper().readTree(new URL("https://api.papermc.io/v2/projects/" + project + "/versions/" + version)).get("builds").toString().replaceAll("\\[", "").replaceAll("]", "").replaceAll(",", ", "));
+                        break;
                 }
             }
             System.out.println(sb);
