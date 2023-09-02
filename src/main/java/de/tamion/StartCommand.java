@@ -14,21 +14,22 @@ public class StartCommand implements Runnable {
 
     @CommandLine.Option(names = {"-d", "--directory"}, description = "Server Directory") String directory = ".";
     @CommandLine.Option(names = {"-m", "--memory"}, description = "How much RAM you want to give the server") String memory = "default";
+    @CommandLine.Option(names = {"-ng", "--nogui"}, description = "Start the server without a gui") boolean nogui;
     @Override
     public void run() {
         try {
-            String nogui = "";
+            String noguis = "";
             if(new File(directory + "/mcscli.properties").exists()) {
                 Properties props = new Properties();
                 props.load(new FileReader(directory + "/mcscli.properties"));
                 String project = props.getProperty("project");
                 String version = props.getProperty("version");
                 String currentbuild = props.getProperty("build");
-                if(memory.equals("default")) {
+                if(memory.equalsIgnoreCase("default")) {
                     memory = props.getProperty("memory");
                 }
-                if(project.equals("paper") || project.equals("purpur") || project.equals("fabric") || project.equals("folia")) {
-                    nogui = "--nogui";
+                if(nogui) {
+                    noguis = "--nogui";
                 }
                 if (props.getProperty("AutoUpdater").equals("true")) {
                     String latestbuild;
@@ -77,7 +78,7 @@ public class StartCommand implements Runnable {
                 memory = "2G";
             }
             System.out.println("Starting server");
-            new ProcessBuilder("java", "-Xms" + memory, "-Xmx" + memory, "-jar", "./server.jar", nogui)
+            new ProcessBuilder("java", "-Xms" + memory, "-Xmx" + memory, "-jar", "./server.jar", noguis)
                     .directory(new File(directory))
                     .inheritIO()
                     .start()

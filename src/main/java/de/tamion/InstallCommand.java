@@ -18,7 +18,8 @@ public class InstallCommand implements Runnable {
     @CommandLine.Option(names = {"-p", "--project"}, description = "Project you want to download") String project = "paper";
     @CommandLine.Parameters(index = "0", description = "Version you want to install", arity = "0..1") String version = "latest";
     @CommandLine.Option(names = {"-b", "--build"}, description = "Build of Version") String build = "latest";
-    @CommandLine.Option(names = {"-n", "--no-start"}, description = "Don't start the server after installing") boolean nostart;
+    @CommandLine.Option(names = {"-ns", "--nostart"}, description = "Don't start the server after installing") boolean nostart;
+    @CommandLine.Option(names = {"-ng", "--nogui"}, description = "Start the server without a gui") boolean nogui;
     @CommandLine.Option(names = {"-m", "--memory"}, description = "How much RAM you want to give the server") String memory = "2G";
 
     @Override
@@ -83,10 +84,14 @@ public class InstallCommand implements Runnable {
                     FileUtils.copyURLToFile(new URL("https://api.papermc.io/v2/projects/" + project + "/versions/" + version + "/builds/" + build + "/downloads/" + project + "-" + version + "-" + build + ".jar"), new File(directory + "/server.jar"));
             }
             System.out.println("Downloaded Server");
+            String noguis = "";
+            if(nogui) {
+                noguis = "--nogui";
+            }
             if (System.getProperty("os.name").toLowerCase().contains("win")) {
-                FileUtils.writeStringToFile(new File(directory + "/start.bat"), "mcs start");
+                FileUtils.writeStringToFile(new File(directory + "/start.bat"), "mcs start " + noguis);
             } else {
-                FileUtils.writeStringToFile(new File(directory + "/start.sh"), "mcs start");
+                FileUtils.writeStringToFile(new File(directory + "/start.sh"), "mcs start " + noguis);
             }
             System.out.println("Created Start Script");
             props.setProperty("project", project);
@@ -102,12 +107,8 @@ public class InstallCommand implements Runnable {
             if(nostart) {
                 return;
             }
-            String nogui = "";
-            if(project.equals("paper") || project.equals("purpur") || project.equals("fabric") || project.equals("folia")) {
-                nogui = "--nogui";
-            }
             System.out.println("Starting server");
-            new ProcessBuilder("java", "-Xms" + memory, "-Xmx" + memory, "-jar", "./server.jar", nogui)
+            new ProcessBuilder("java", "-Xms" + memory, "-Xmx" + memory, "-jar", "./server.jar", noguis)
                     .directory(new File(directory))
                     .inheritIO()
                     .start()
