@@ -7,8 +7,9 @@ import org.apache.commons.io.IOUtils;
 import picocli.CommandLine;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Properties;
 
@@ -18,6 +19,7 @@ public class InstallCommand implements Runnable {
     @CommandLine.Option(names = {"-p", "--project"}, description = "Project you want to download") String project = "paper";
     @CommandLine.Parameters(index = "0", description = "Version you want to install", arity = "0..1") String version = "latest";
     @CommandLine.Option(names = {"-b", "--build"}, description = "Build of Version") String build = "latest";
+    @CommandLine.Option(names = {"-sc", "--startcommand"}, description = "The Command used to start the server, replaces %memory and %nogui with there respective values") String startCommand = "java -Xms%memory -Xmx%memory -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:G1NewSizePercent=30 -XX:G1MaxNewSizePercent=40 -XX:G1HeapRegionSize=8M -XX:G1ReservePercent=20 -XX:G1HeapWastePercent=5 -XX:G1MixedGCCountTarget=4 -XX:InitiatingHeapOccupancyPercent=15 -XX:G1MixedGCLiveThresholdPercent=90 -XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32 -XX:+PerfDisableSharedMem -XX:MaxTenuringThreshold=1 -Dusing.aikars.flags=https://mcflags.emc.gs -Daikars.new.flags=true -jar ./server.jar %nogui";
     @CommandLine.Option(names = {"-ns", "--nostart"}, description = "Don't start the server after installing") boolean nostart;
     @CommandLine.Option(names = {"-ng", "--nogui"}, description = "Start the server without a gui") boolean nogui;
     @CommandLine.Option(names = {"-m", "--memory"}, description = "How much RAM you want to give the server") String memory = "2G";
@@ -25,9 +27,9 @@ public class InstallCommand implements Runnable {
     @Override
     public void run() {
         project = project.toLowerCase();
+        Properties props = new Properties();
         try {
-            Properties props = new Properties();
-            if(version.equalsIgnoreCase("latest")) {
+            if (version.equalsIgnoreCase("latest")) {
                 String[] versions;
                 switch (project) {
                     case "fabric":
@@ -45,7 +47,7 @@ public class InstallCommand implements Runnable {
                 }
                 version = versions[versions.length - 1].replaceAll("\"", "");
             }
-            if(build.equalsIgnoreCase("latest")) {
+            if (build.equalsIgnoreCase("latest")) {
                 switch (project) {
                     case "fabric":
                         JsonNode json = new ObjectMapper().readTree(new URL("https://meta.fabricmc.net/v2/versions/loader"));
@@ -62,11 +64,10 @@ public class InstallCommand implements Runnable {
                     default:
                         String[] builds = new ObjectMapper().readTree(new URL("https://api.papermc.io/v2/projects/" + project + "/versions/" + version)).get("builds").toString().replaceAll("\\[", "").replaceAll("]", "").split(",");
                         build = builds[builds.length - 1];
-                        break;
                 }
-                props.setProperty("AutoUpdater", "true");
+                props.setProperty("autoupdater", "true");
             } else {
-                props.setProperty("AutoUpdater", "false");
+                props.setProperty("autoupdater", "false");
             }
             System.out.println("Downloading " + project + " version " + version + " build #" + build + "...");
             switch (project) {
@@ -83,40 +84,45 @@ public class InstallCommand implements Runnable {
                 default:
                     FileUtils.copyURLToFile(new URL("https://api.papermc.io/v2/projects/" + project + "/versions/" + version + "/builds/" + build + "/downloads/" + project + "-" + version + "-" + build + ".jar"), new File(directory + "/server.jar"));
             }
-            System.out.println("Downloaded Server");
-            String noguis = "";
-            if(nogui) {
-                noguis = "--nogui";
-            }
+        } catch (MalformedURLException e) {
+            System.out.println("Please send exception to developer on Discord: tamion\n");
+            e.printStackTrace();
+        } catch (IOException e) {
+            System.out.println("Failed to find " + project + " version " + version + " build " + build);
+        }
+        System.out.println("Downloaded Server");
+        try {
             if (System.getProperty("os.name").toLowerCase().contains("win")) {
-                FileUtils.writeStringToFile(new File(directory + "/start.bat"), "mcs start " + noguis);
+                FileUtils.writeStringToFile(new File(directory + "/start.bat"), "mcs start");
             } else {
-                FileUtils.writeStringToFile(new File(directory + "/start.sh"), "mcs start " + noguis);
+                FileUtils.writeStringToFile(new File(directory + "/start.sh"), "mcs start");
             }
-            System.out.println("Created Start Script");
-            props.setProperty("project", project);
-            props.setProperty("version", version);
-            props.setProperty("build", build);
-            props.setProperty("memory", memory);
+        } catch (IOException e) {
+            System.out.println("Unable to create Start Script");
+        }
+        System.out.println("Created Start Script");
+        props.setProperty("project", project);
+        props.setProperty("version", version);
+        props.setProperty("build", build);
+        props.setProperty("nogui", String.valueOf(nogui));
+        props.setProperty("memory", memory);
+        props.setProperty("startcommand", startCommand);
+        try {
             props.store(new FileWriter(directory + "/mcscli.properties"), "MinecraftServerCLI settings");
-            System.out.println("Created Properties File");
+        } catch (IOException e) {
+            System.out.println("Unable to create Properties File");
+        }
+        System.out.println("Created Properties File");
+        try {
             if(project.equals("paper") || project.equals("purpur") || project.equals("magma") || project.equals("fabric") || project.equals("folia")) {
                 FileUtils.writeStringToFile(new File(directory + "/eula.txt"), "eula=true");
                 System.out.println("Accepted Eula");
             }
-            if(nostart) {
-                return;
-            }
-            System.out.println("Starting server");
-            new ProcessBuilder("java", "-Xms" + memory, "-Xmx" + memory, "-jar", "./server.jar", noguis)
-                    .directory(new File(directory))
-                    .inheritIO()
-                    .start()
-                    .waitFor();
-        } catch(FileNotFoundException e) {
-            System.out.println("No downloadable server software found for " + project + " version " + version + " build " + build);
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (IOException e) {
+            System.out.println("Unable to accept Eula");
+        }
+        if(!nostart) {
+            CommandLine.run(new StartCommand(), "-d", directory);
         }
     }
 }
